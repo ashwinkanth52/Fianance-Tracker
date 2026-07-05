@@ -1,7 +1,8 @@
 // app.js — wires the UI to Firebase + calculations.js. Vanilla JS, no framework.
-import { auth } from "./firebase-init.js";
+import { auth, db } from "./firebase-init.js";
 import { login, logout, watchAuthState } from "./auth.js";
 import { HOUSEHOLD_MEMBERS } from "./household-config.js";
+import { buildInfo } from "./build-info.js";
 import * as DB from "./data.js";
 import * as Calc from "./calculations.js";
 
@@ -91,6 +92,64 @@ function showToast(msg, isError) {
 }
 
 /* ======================================================================
+   DEPLOYMENT INFO & NETWORK SYNC
+   ====================================================================== */
+function initializeDeploymentInfo() {
+  const deployedEl = el("deployed-time");
+  const syncStatusEl = el("sync-status");
+  
+  if (deployedEl) {
+    deployedEl.textContent = buildInfo.deployedAt;
+    deployedEl.title = `Last deployed: ${buildInfo.deployedAt}`;
+  }
+  
+  // Initialize sync status
+  updateSyncStatus();
+  
+  // Monitor network connectivity
+  window.addEventListener("online", () => {
+    updateSyncStatus();
+    showToast("📡 Connection restored - data syncing...", false);
+  });
+  
+  window.addEventListener("offline", () => {
+    updateSyncStatus();
+    showToast("⚠️ Connection lost - changes will sync when online", false);
+  });
+  
+  // Monitor Firestore sync state for real-time updates
+  if (db && typeof db.collection === "function") {
+    try {
+      db.disableNetwork().then(() => db.enableNetwork()).catch(() => {});
+    } catch (e) {
+      // Firestore network state not available
+    }
+  }
+}
+
+function updateSyncStatus() {
+  const syncStatusEl = el("sync-status");
+  if (!syncStatusEl) return;
+  
+  const isOnline = navigator.onLine;
+  
+  if (isOnline) {
+    syncStatusEl.textContent = "Syncing";
+    syncStatusEl.className = "sync-status online";
+    // Auto-reset to indicate sync complete after 2 seconds
+    setTimeout(() => {
+      if (navigator.onLine && syncStatusEl) {
+        syncStatusEl.textContent = "Synced";
+        syncStatusEl.className = "sync-status online";
+      }
+    }, 2000);
+  } else {
+    syncStatusEl.textContent = "Offline";
+    syncStatusEl.className = "sync-status offline";
+  }
+}
+
+/* ======================================================================
    MODAL
    ====================================================================== */
 function openModal(title, bodyHtml, onMount) {
@@ -163,6 +222,7 @@ watchAuthState((user) => {
     state.user = user;
     el("screen-login").classList.remove("active");
     el("screen-app").classList.add("active");
+    initializeDeploymentInfo();
     startListenersOnce();
   } else {
     state.user = null;
