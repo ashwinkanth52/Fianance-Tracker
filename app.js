@@ -237,6 +237,7 @@ watchAuthState((user) => {
    NAVIGATION
    ====================================================================== */
 const FAB_CONFIG = {
+  dashboard: { label: "Quick add", action: () => openAddQuickExpenseModal() },
   fixed: { label: "Add expense", action: () => openAddFixedExpenseModal() },
   loans: { label: "Add", action: () => openAddHandLoanModal() },
   savings: { label: "Add goal", action: () => openAddSavingsGoalModal() }
@@ -923,6 +924,70 @@ el("qa-submit").addEventListener("click", async () => {
   // Keep focus on amount for next quick add
   setTimeout(() => el("qa-amount").focus(), 100);
 });
+
+/* ======================================================================
+   QUICK ADD EXPENSE MODAL (for dashboard FAB)
+   ====================================================================== */
+function openAddQuickExpenseModal() {
+  const today = new Date().toISOString().slice(0, 10);
+  const body = `
+    <div class="field-row"><label>Category</label>
+      <select class="ctrl" id="qe-category">
+        <option>Groceries</option>
+        <option>Dining Out</option>
+        <option>Snacks</option>
+        <option>Fuel</option>
+        <option>Travel</option>
+        <option>Shopping</option>
+        <option>Partying</option>
+        <option>Internet/Bills</option>
+        <option>Electronics</option>
+        <option>Health</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="field-row"><label>Amount</label>
+      <div class="money-input"><span class="cur">₹</span><input class="num" id="qe-amount" type="text" inputmode="numeric" placeholder="0"></div>
+    </div>
+    <div class="field-row"><label>Date</label>
+      <input class="ctrl" id="qe-date" type="date" value="${today}">
+    </div>
+    <div class="field-row"><label>Belongs to</label>
+      <select class="ctrl" id="qe-tag">
+        <option value="household">Household</option>
+        <option value="ashwin">Ashwin</option>
+        <option value="wife">Vandana</option>
+      </select>
+    </div>
+    <div class="field-row"><label>Comments (optional)</label>
+      <input class="ctrl" id="qe-note" type="text" placeholder="e.g. lunch, fuel bill">
+    </div>
+    <div class="error-text" id="qe-error"></div>
+    <button class="qa-btn" id="qe-submit" style="margin-top:6px">+ Add expense</button>
+  `;
+  openModal("Quick add expense", body, (sheet) => {
+    wireMoneyBlurFormat(el("qe-amount"));
+    el("qe-submit").addEventListener("click", async () => {
+      const category = el("qe-category").value;
+      const amount = parseMoney(el("qe-amount").value);
+      const date = el("qe-date").value;
+      const tag = el("qe-tag").value;
+      const note = el("qe-note").value.trim();
+      const errEl = el("qe-error");
+      
+      if (amount <= 0) return showFieldError(errEl, "Enter an amount greater than zero.");
+      if (!date) return showFieldError(errEl, "Pick a date.");
+      
+      try {
+        await DB.addVariableExpense({ category, amount, date, tag, note, uid: state.user.uid });
+        closeModal();
+        showToast("✓ Expense added");
+      } catch (err) {
+        showFieldError(errEl, "Couldn't save: " + err.message);
+      }
+    });
+  });
+}
 
 /* ======================================================================
    LOANS & PENDING SCREEN
