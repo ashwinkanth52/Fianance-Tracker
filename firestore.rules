@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Hard allowlist — only these two accounts can read or write ANYTHING
+    // in this database. Everyone else (even a valid Firebase Auth login
+    // from some other account) gets denied by default.
+    function isHouseholdMember() {
+      return request.auth != null &&
+        request.auth.token.email in [
+          'ashwinkanth52@gmail.com',
+          'vandana.noorla@gmail.com'
+        ];
+    }
+
+    match /income/{docId} {
+      allow read, write: if isHouseholdMember();
+    }
+
+    match /bonusIncome/{docId} {
+      allow read, write: if isHouseholdMember();
+    }
+
+    match /variableIncome/{docId} {
+      allow read, write: if isHouseholdMember();
+    }
+
+    match /fixedExpenses/{docId} {
+      allow read, write: if isHouseholdMember();
+    }
+
+    match /variableExpenses/{docId} {
+      allow read, write: if isHouseholdMember();
+    }
+
+    match /handLoans/{docId} {
+      allow read, write: if isHouseholdMember();
+    }
+
+    match /savingsGoals/{docId} {
+      allow read, write: if isHouseholdMember();
+    }
+
+    match /plannedExpenses/{docId} {
+      allow read, write: if isHouseholdMember();
+    }
+
+    // Everything else: denied by default (Firestore's default-deny behavior).
+  }
+}
