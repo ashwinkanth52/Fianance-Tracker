@@ -210,11 +210,17 @@
   .lp-meta b{color:var(--text);font-weight:700;}
 
   .quickadd{padding:16px;}
+  .quick-categories{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;padding:0 16px;}
+  .qa-cat-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;border:1.5px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text);font-size:11px;font-weight:600;text-align:center;line-height:1.1;transition:all 0.2s ease;cursor:pointer;padding:6px;word-break:break-word;overflow:hidden;}
+  .qa-cat-btn:active{transform:scale(0.95);}
+  .qa-cat-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .qa-cat-btn.selected{border-color:var(--accent);background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(78,156,139,0.3);}
   .qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .qa-grid .full{grid-column:1/-1;}
   .ctrl{height:44px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-2);padding:0 12px;font-size:14px;color:var(--text);width:100%;outline:none;}
   select.ctrl{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239C998F' stroke-width='1.8' viewBox='0 0 24 24'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;}
-  .qa-btn{grid-column:1/-1;height:46px;border:0;border-radius:var(--r-md);background:var(--accent);color:#fff;font-size:14.5px;font-weight:600;}
+  .qa-btn{grid-column:1/-1;height:46px;border:0;border-radius:var(--r-md);background:var(--accent);color:#fff;font-size:14.5px;font-weight:600;transition:background 0.2s ease;}
+  .qa-btn:active{background:var(--accent);opacity:0.85;}
   .month-head{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 10px;}
   .month-head .mt{font-size:13px;font-weight:700;}
   .month-head .ms{font-size:12px;color:var(--text-3);font-weight:600;}

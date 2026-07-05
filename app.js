@@ -876,6 +876,37 @@ function renderVariable() {
 }
 
 wireMoneyBlurFormat(el("qa-amount"));
+
+// Quick category buttons for variable expenses
+document.querySelectorAll(".qa-cat-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const category = btn.dataset.category;
+    el("qa-category").value = category;
+    // Update selected state
+    document.querySelectorAll(".qa-cat-btn").forEach((b) => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    // Focus on amount input for quick typing
+    el("qa-amount").focus();
+    el("qa-amount").select();
+  });
+});
+
+// Enter key to submit (from note field)
+el("qa-note").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    el("qa-submit").click();
+  }
+});
+
+// Enter key to submit (from amount field when ready)
+el("qa-amount").addEventListener("keypress", (e) => {
+  if (e.key === "Enter" && el("qa-amount").value) {
+    e.preventDefault();
+    el("qa-note").focus(); // Move to note, then can press Enter again
+  }
+});
+
 el("qa-submit").addEventListener("click", async () => {
   const category = el("qa-category").value;
   const amount = parseMoney(el("qa-amount").value);
@@ -886,7 +917,11 @@ el("qa-submit").addEventListener("click", async () => {
   if (!date) { showToast("Pick a date", true); return; }
   await DB.addVariableExpense({ category, amount, date, tag, note, uid: state.user.uid });
   el("qa-amount").value = ""; el("qa-note").value = "";
-  showToast("Expense added");
+  // Clear selected category
+  document.querySelectorAll(".qa-cat-btn").forEach((b) => b.classList.remove("selected"));
+  showToast("✓ Expense added");
+  // Keep focus on amount for next quick add
+  setTimeout(() => el("qa-amount").focus(), 100);
 });
 
 /* ======================================================================
